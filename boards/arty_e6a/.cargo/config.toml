@@ -1,0 +1,61 @@
+# Licensed under the Apache License, Version 2.0 or the MIT License.
+# SPDX-License-Identifier: Apache-2.0 OR MIT
+# Copyright Tock Contributors 2024.
+
+#include = [
+#  "../../cargo/tock_flags.toml",
+#"../../cargo/unstable_flags.toml",
+#  "../../cargo/riscv_flags.toml",
+#]
+
+
+[build]
+target = "riscv32imac-unknown-none-elf"
+
+rustflags = [
+  # Set a sentinel cfg flag so that we know this configuration file was included
+  # in the build. This is checked in build.rs.
+  "--cfg", "cfg_tock_buildflagssentinel",
+  # Tell rustc to use the LLVM linker. This avoids needing GCC as a dependency
+  # to build the kernel.
+  "-C", "linker=rust-lld",
+  # Use the LLVM lld executable with the `-flavor gnu` flag.
+  "-C", "linker-flavor=ld.lld",
+  # Use static relocation model. See https://github.com/tock/tock/pull/2853
+  "-C", "relocation-model=static",
+  # lld by default uses a default page size to align program sections. Tock
+  # expects that program sections are set back-to-back. `-nmagic` instructs the
+  # linker to not page-align sections.
+  "-C", "link-arg=-nmagic",
+  # Identical Code Folding (ICF) set to all. This tells the linker to be more
+  # aggressive about removing duplicate code. The default is `safe`, and the
+  # downside to `all` is that different functions in the code can end up with
+  # the same address in the binary. However, it can save a fair bit of code
+  # size.
+  "-C", "link-arg=-icf=all",
+
+  "-C", "link-arg=-Map=kernel.map",
+
+  # Enable link-time-optimization
+  "-C", "lto",
+  # Have rustc generate stack sizes for analyzing the size of stack frames.
+  # "-Z", "emit-stack-sizes",
+  
+  # NOTE: This flag causes kernel panics on some ARM cores. Since the size
+  # benefit is almost exclusively for RISC-V, we only apply it for those
+  # targets.
+  "-C", "force-frame-pointers=no",
+  # Ensure relocations generated is eligible for linker relaxation.
+  # This provides huge space savings.
+  # "-C", "target-feature=+relax",
+  #"-C", "link-args=-fsome-artisanal-option"
+]
+
+rustdocflags = [
+  # Error if there are warnings. This allows CI to fail on warnings.
+  "-D", "warnings",
+  # Document internal code. This is helpful for understanding how the kernel
+  # works and developing within crates.
+  "--document-private-items"
+]
+
