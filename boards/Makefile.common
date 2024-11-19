@@ -170,7 +170,7 @@ OBJDUMP ?= $(TOOLCHAIN)-objdump
 #   the kernel binary file. This section is a placeholder for optionally
 #   including application binaries, and only needs to exist in the .elf. By
 #   removing it, we prevent the kernel binary from overwriting applications.
-OBJCOPY_FLAGS ?= --strip-sections --strip-all --remove-section .apps
+OBJCOPY_FLAGS ?= --strip-sections --strip-all --remove-section .apps --remove-section .attributes
 
 # Set the default flags we need for objdump to get a .lst file.
 OBJDUMP_FLAGS ?= --disassemble-all --source --section-headers --demangle
