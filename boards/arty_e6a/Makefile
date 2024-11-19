@@ -29,3 +29,5 @@ flash-core: core/design-arty.bit
 	openocd -f openocd/arty-openocd-digilent.cfg \
 		-c "init; jtagspi_init 0 openocd/bscan_spi_xc7a100t.bit; jtagspi_program $< 0x0; shutdown"
 
+
+build-kernel: $(TOCK_ROOT_DIRECTORY)target/$(TARGET)/release/$(PLATFORM).bin
